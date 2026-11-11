@@ -80,6 +80,23 @@
       <div id="listeClassement"></div>
     </div>
 
+    <!-- VUE : STATISTIQUES -->
+    <div class="vue" id="vue-stats">
+      <div class="titre-section" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Statistiques</span>
+        <button type="button" class="btn btn-secondaire btn-petit" id="statsActualiser" aria-label="Actualiser les statistiques">↻ Actualiser</button>
+      </div>
+      <div class="filtre-statut" id="statsSousVues">
+        <button type="button" class="actif" data-sv="saison">Saison</button>
+        <button type="button" data-sv="joueurs">Joueurs</button>
+        <button type="button" data-sv="records">Records</button>
+      </div>
+      <label for="statsPeriode" style="margin-top:0;">Période</label>
+      <select id="statsPeriode"></select>
+      <div class="info-maj" id="statsMaj" style="margin:6px 0 12px;"></div>
+      <div id="statsContenu"></div>
+    </div>
+
     <!-- VUE : JOUEURS (admin) -->
     <div class="vue" id="vue-joueurs">
       <div class="titre-section">Gestion des joueurs</div>
@@ -133,6 +150,9 @@
     </button>
     <button class="nav-btn" data-vue="classement">
       <span class="nav-icon">🏆</span><span>Classement</span>
+    </button>
+    <button class="nav-btn" data-vue="stats">
+      <span class="nav-icon">📊</span><span>Stats</span>
     </button>
     <button class="nav-btn admin-only" data-vue="joueurs" style="display:none;">
       <span class="nav-icon">🧑‍🤝‍🧑</span><span>Joueurs</span>
@@ -264,6 +284,16 @@
     <button class="btn btn-secondaire btn-bloc" id="btnTelechargerPdf">⬇️ Enregistrer sur l'appareil</button>
   </div>
 
+  <!-- ============ VOLET : FICHE JOUEUR (STATS) ============ -->
+  <div class="overlay" id="overlayStatsJoueur"></div>
+  <div class="panel" id="panelStatsJoueur">
+    <div class="panel-header">
+      <h2 id="titreFicheJoueur">Joueur</h2>
+      <button class="panel-close" data-close="panelStatsJoueur" aria-label="Fermer">✕</button>
+    </div>
+    <div id="contenuFicheJoueur"></div>
+  </div>
+
   <!-- ============ TOAST + LOADER ============ -->
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="loader"><div class="spinner"></div></div>
@@ -272,5 +302,6 @@
 
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="stats.js"></script>
 </body>
 </html>

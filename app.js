@@ -403,6 +403,7 @@
     }
     if (nomVue === 'joueurs') rafraichirJoueurs();
     if (nomVue === 'admin') rafraichirAdmin();
+    if (nomVue === 'stats' && window.PTankStats) window.PTankStats.afficher();
   }
 
   // ==========================================================
@@ -1420,6 +1421,7 @@
       const res = await appelServeur('archiverTournoi', ETAT.adminCode, date);
       fermerPanel('panelArchive');
       afficherToast('Tournoi archivé (onglet « ' + res.ongletCree + ' »).', false, 4500);
+      if (res.avertissement) setTimeout(() => alert('⚠ ' + res.avertissement), 600);
     } catch (e) { /* message déjà affiché */ }
   });
 
@@ -1495,6 +1497,9 @@
       navigator.serviceWorker.register('./sw.js').catch(() => { /* l'appli fonctionne aussi sans */ });
     });
   }
+
+  // Outils partagés avec stats.js
+  window.PTank = { api, esc, ouvrirPanel, fermerPanel, afficherToast };
 
   // ==========================================================
   // DÉMARRAGE

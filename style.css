@@ -753,3 +753,168 @@
     .vue.active { animation: none; }
     .panel, #toast { transition: none; }
   }
+
+  /* ============================================================
+     STATISTIQUES
+     ============================================================ */
+  nav.bottom-nav button { min-width: 0; }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .kpi {
+    background: var(--carte);
+    border-radius: 12px;
+    box-shadow: var(--ombre);
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .kpi strong {
+    display: block;
+    font-size: 21px;
+    color: var(--vert-fonce);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi span {
+    display: block;
+    font-size: 11px;
+    color: var(--texte-clair);
+    margin-top: 3px;
+  }
+  .kpi-fanny strong { color: #c2185b; }
+  .kpis-fiche .kpi { box-shadow: none; background: #f3f6f4; }
+
+  .graph-defile {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 4px -4px 0;
+  }
+  .graph-defile svg { display: block; }
+  .graph-defile .barre { fill: var(--vert-clair); }
+  .graph-defile .axe { stroke: #d6d6d6; stroke-width: 1; }
+  .graph-defile .grille { stroke: #eeeeee; stroke-width: 1; }
+  .graph-defile .repere { stroke: #d9c27a; stroke-width: 1; stroke-dasharray: 4 4; }
+  .graph-defile .courbe { fill: none; stroke: var(--vert-fonce); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  .graph-defile .point { fill: white; stroke: var(--vert-fonce); stroke-width: 2; }
+  .graph-defile text { font-size: 10.5px; fill: var(--texte-clair); text-anchor: middle; font-family: inherit; }
+  .graph-defile text.val { fill: var(--texte); font-weight: 700; }
+
+  .ligne-podium { font-size: 13px; padding: 2px 0; }
+  .carte-tournoi { cursor: pointer; }
+  .detail-tournoi { margin-top: 10px; border-top: 1px solid #f0f0f0; padding-top: 6px; }
+  .ligne-match {
+    display: grid;
+    grid-template-columns: 26px 1fr auto 1fr;
+    gap: 6px;
+    align-items: center;
+    font-size: 11.5px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f6f6f6;
+  }
+  .ligne-match:last-child { border-bottom: none; }
+  .tour-mini { color: var(--texte-clair); font-weight: 700; }
+  .eq-mini { color: var(--texte-clair); line-height: 1.3; }
+  .eq-mini.droite { text-align: right; }
+  .score-mini { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .score-mini.fanny { color: #c2185b; }
+
+  .barre-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .barre-options .choix-dates { margin-top: 0; }
+  .seuil {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 12px;
+  }
+  .seuil select { width: auto; padding: 7px 10px; font-size: 13px; }
+
+  .ligne-stat-joueur {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 2px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+  .ligne-stat-joueur:last-child { border-bottom: none; }
+  .rang-cercle.rang-1 { background: var(--or); color: #3a3000; }
+  .rang-cercle.rang-2 { background: var(--argent); color: #2e2e2e; }
+  .rang-cercle.rang-3 { background: var(--bronze); color: white; }
+  .detail-stat { flex: 1; min-width: 0; }
+  .nom-stat { font-weight: 700; font-size: 13.5px; display: flex; align-items: center; }
+  .nom-stat .pseudo, #titreFicheJoueur .pseudo { font-weight: 400; font-size: 12px; color: var(--texte-clair); margin-left: 4px; }
+  .sous-stat { font-size: 11px; color: var(--texte-clair); margin: 2px 0 4px; }
+  .valeur-stat {
+    font-weight: 700;
+    color: var(--vert-fonce);
+    font-size: 13px;
+    text-align: right;
+    max-width: 38%;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .jauge {
+    display: block;
+    height: 5px;
+    background: #edf1ef;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .jauge span { display: block; height: 100%; background: var(--vert-clair); border-radius: 5px; }
+
+  .pastille-inconnue { background: #c4c4c4; }
+
+  .ligne-record {
+    font-size: 13px;
+    line-height: 1.45;
+    padding: 6px 0;
+    border-bottom: 1px solid #f4f4f4;
+  }
+  .ligne-record:last-child { border-bottom: none; }
+  .ligne-record strong { color: var(--vert-fonce); }
+  .note-inline { color: var(--texte-clair); font-size: 11.5px; }
+
+  .barres-qualite { display: flex; flex-direction: column; gap: 8px; }
+  .ligne-qualite {
+    display: grid;
+    grid-template-columns: 96px 1fr 44px;
+    gap: 8px;
+    align-items: center;
+    font-size: 12.5px;
+  }
+  .ligne-qualite .jauge { height: 8px; }
+  .ligne-qualite strong { text-align: right; }
+  .lib-qualite { display: flex; align-items: center; }
+
+  #titreFicheJoueur { display: flex; align-items: center; }
+  .sous-titre-fiche {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--vert-fonce);
+    margin: 16px 0 6px;
+  }
+  .pastilles-resultats { display: flex; flex-wrap: wrap; gap: 4px; }
+  .res {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+  .res-V { background: var(--vert-clair); }
+  .res-D { background: #d9776c; }
+  .res-N { background: var(--argent); }
