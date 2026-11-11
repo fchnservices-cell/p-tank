@@ -988,4 +988,7 @@
     letter-spacing: 0.2px;
     cursor: pointer;
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
+  .signature:active { color: white; }

@@ -1602,13 +1602,21 @@
 
   // ==========================================================
   // SIGNATURE DE L'AUTEUR (en-tête)
-  // Modifiable sans toucher au code : ajouter AUTEUR: '...' dans config.js
+  // Modifiable sans toucher au code : ajouter AUTEUR: '...' et/ou
+  // ANNEE_CREATION: 2026 dans config.js
   // ==========================================================
   const AUTEUR = CFG.AUTEUR || 'Fabrice (Fabou)';
-  $('signatureAuteur').textContent = 'par ' + AUTEUR;
-  $('signatureAuteur').addEventListener('click', () => {
-    afficherToast('🎯 P-tank — application conçue par ' + AUTEUR + ' · © ' + new Date().getFullYear(), false, 4000);
-  });
+  const ANNEE_CREATION = Number(CFG.ANNEE_CREATION) || 2026;
+  const ANNEE = new Date().getFullYear();
+  // © 2026, puis © 2026-2027 etc. les années suivantes
+  const MENTION = AUTEUR + ' © ' + ANNEE_CREATION + (ANNEE > ANNEE_CREATION ? '-' + ANNEE : '');
+  const signature = $('signatureAuteur');
+  if (signature) { // absent si index.html n'est pas encore à jour : on ne bloque rien
+    signature.textContent = MENTION;
+    signature.addEventListener('click', () => {
+      afficherToast('🎯 P-tank — application conçue et développée par ' + MENTION, false, 4000);
+    });
+  }
 
   // Outils partagés avec stats.js
   window.PTank = { api, esc, ouvrirPanel, fermerPanel, afficherToast };
