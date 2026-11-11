@@ -7,6 +7,10 @@
  * Stratégie « réseau d'abord » : avec du réseau, on charge toujours
  * la dernière version publiée ; sans réseau (ou s'il est trop lent),
  * on utilise la copie locale. Aucun numéro de version à gérer.
+ *
+ * GitHub Pages demande aux navigateurs de garder les fichiers 10 minutes
+ * en mémoire : on force donc la vérification auprès du serveur
+ * (cache: 'no-cache'), pour qu'une mise à jour soit visible tout de suite.
  * ============================================================ */
 const CACHE = 'ptank-app';
 const DELAI_RESEAU_MS = 3500;
@@ -25,7 +29,9 @@ const FICHIERS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(FICHIERS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then((cache) => cache.addAll(FICHIERS.map((f) => new Request(f, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -50,7 +56,9 @@ async function reseauDabord(req) {
   const cache = await caches.open(CACHE);
   const copie = await cache.match(req, { ignoreSearch: true });
 
-  const reseau = fetch(req).then((rep) => {
+  // Une requête de navigation ne peut pas être recopiée avec des options : on repart de son adresse
+  const cible = req.mode === 'navigate' ? req.url : req;
+  const reseau = fetch(cible, { cache: 'no-cache' }).then((rep) => {
     if (rep && rep.ok) cache.put(req, rep.clone());
     return rep;
   });
