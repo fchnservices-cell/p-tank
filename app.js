@@ -32,6 +32,7 @@
     dateTournoi: null,
     joueurs: [],
     majServeur: null,      // horodatage des dernières données reçues
+    tourActif: null,       // tour affiché dans l'onglet Scores (null = choix automatique)
     donneesChargees: false
   };
 
@@ -335,6 +336,7 @@
 
     if (!horsLigne && nb === 0) {
       bandeau.className = '';
+      mesurerBandeaux();
       return;
     }
     let texte = horsLigne ? '📴 Hors connexion' : '';
@@ -345,7 +347,18 @@
     $('texteBandeau').textContent = texte;
     btn.style.display = (!horsLigne && nb > 0 && !envoiEnCours) ? 'inline-block' : 'none';
     bandeau.className = 'active' + (horsLigne ? ' hors-ligne' : '');
+    mesurerBandeaux();
   }
+
+  /** Hauteur de l'en-tête et du bandeau : les onglets des tours se calent juste dessous. */
+  function mesurerBandeaux() {
+    const racine = document.documentElement.style;
+    const entete = document.querySelector('header.app-header');
+    const bandeau = $('bandeauReseau');
+    racine.setProperty('--hauteur-entete', (entete ? entete.offsetHeight : 64) + 'px');
+    racine.setProperty('--hauteur-bandeau', (bandeau.classList.contains('active') ? bandeau.offsetHeight : 0) + 'px');
+  }
+  window.addEventListener('resize', mesurerBandeaux);
 
   $('btnEnvoyerAttente').addEventListener('click', () => { viderFileAttente(); });
 
@@ -941,14 +954,88 @@
       conteneur.innerHTML = '<div class="texte-vide">Aucun match programmé. L\'administrateur doit lancer le tirage au sort.</div>';
       return;
     }
-    const tours = [...new Set(matchs.map((m) => m.tour))].sort();
-    let html = '';
-    tours.forEach((tour) => {
-      html += `<div class="tour-titre">Tour ${esc(tour)}</div>`;
-      matchs.filter((m) => m.tour === tour).forEach((m) => { html += carteMatch(m); });
-    });
-    conteneur.innerHTML = html;
+    const tours = toursDe(matchs);
+    if (ETAT.tourActif === null || tours.indexOf(ETAT.tourActif) === -1) {
+      ETAT.tourActif = tourEnCours(matchs, tours);
+    }
+    dessinerOngletsTours(matchs, tours);
+
+    // Matchs restant à saisir en premier, puis ceux déjà joués (ordre du tirage conservé)
+    const duTour = matchs.filter((m) => String(m.tour) === String(ETAT.tourActif));
+    const ordonnes = duTour.filter((m) => !matchSaisi(m)).concat(duTour.filter(matchSaisi));
+    if (ordonnes.length && duTour.some(matchSaisi) && duTour.some((m) => !matchSaisi(m))) {
+      const idx = ordonnes.findIndex(matchSaisi);
+      conteneur.innerHTML = ordonnes.slice(0, idx).map(carteMatch).join('') +
+        '<div class="separateur-joues">Matchs déjà saisis</div>' +
+        ordonnes.slice(idx).map(carteMatch).join('');
+    } else {
+      conteneur.innerHTML = ordonnes.map(carteMatch).join('');
+    }
+    appliquerRechercheScores();
+  }
+
+  // ---------- Onglets des tours ----------
+  function toursDe(matchs) {
+    return [...new Set(matchs.map((m) => String(m.tour)))].sort((a, b) => Number(a) - Number(b));
+  }
+
+  function matchSaisi(m) {
+    return m.statut === 'Joué' || (m.id && scoreEnAttente(m.id) !== null);
+  }
+
+  /** Tour proposé par défaut : le premier qui a encore des matchs sans score, sinon le dernier. */
+  function tourEnCours(matchs, tours) {
+    const t = tours.find((tour) => matchs.some((m) => String(m.tour) === tour && !matchSaisi(m)));
+    return t !== undefined ? t : tours[tours.length - 1];
+  }
+
+  function texteRechercheMatch(m) {
+    return ('equipe ' + m.numEquipeA + ' equipe ' + m.numEquipeB + ' ' +
+      nomsMembres(m.composA) + ' ' + nomsMembres(m.composB)).toLowerCase();
+  }
+
+  function dessinerOngletsTours(matchs, tours) {
+    const recherche = $('rechercheScores').value.trim().toLowerCase();
+    $('ongletsTours').innerHTML = tours.map((tour) => {
+      const duTour = matchs.filter((m) => String(m.tour) === tour);
+      const saisis = duTour.filter(matchSaisi).length;
+      const complet = saisis === duTour.length;
+      const actif = tour === String(ETAT.tourActif);
+      let detail = complet ? '✓ terminé' : saisis + '/' + duTour.length + ' joués';
+      if (recherche) {
+        const n = duTour.filter((m) => texteRechercheMatch(m).includes(recherche)).length;
+        detail = n ? '🔍 ' + n + ' trouvé' + (n > 1 ? 's' : '') : 'aucun';
+      }
+      return `<button type="button" role="tab" aria-selected="${actif}" data-tour="${esc(tour)}"
+                class="onglet-tour ${actif ? 'actif' : ''} ${complet ? 'complet' : ''}">
+                <span class="onglet-titre">Tour ${esc(tour)}</span>
+                <span class="onglet-detail">${detail}</span>
+              </button>`;
+    }).join('');
+  }
+
+  $('ongletsTours').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-tour]');
+    if (!btn) return;
+    const tour = btn.getAttribute('data-tour');
+    if (tour === String(ETAT.tourActif)) return;
+    if (saisieScoreEnCours() && !confirm('Un score tapé n\'a pas été validé. Changer de tour quand même ?')) return;
+    ETAT.tourActif = tour;
+    dessinerMatchs(ETAT.matchs);
+    const titre = document.querySelector('#vue-scores .titre-section');
+    if (titre && window.scrollY > titre.offsetTop) window.scrollTo(0, titre.offsetTop);
+  });
+
+  function appliquerRechercheScores() {
     filtrerCartes('listeMatchs', $('rechercheScores').value);
+    const visibles = Array.from(document.querySelectorAll('#listeMatchs [data-recherche]'))
+      .filter((c) => c.style.display !== 'none').length;
+    const ancien = $('aucunResultatScores');
+    if (ancien) ancien.remove();
+    if ($('rechercheScores').value.trim() && visibles === 0) {
+      $('listeMatchs').insertAdjacentHTML('beforeend',
+        '<div class="texte-vide" id="aucunResultatScores">Aucun match de ce tour ne correspond. Les onglets indiquent dans quel tour chercher.</div>');
+    }
   }
 
   function carteMatch(m) {
@@ -1004,8 +1091,9 @@
     return `<div class="carte ${attente ? 'carte-attente' : ''}" data-recherche="${esc(recherche)}">${entete}${corps}</div>`;
   }
 
-  $('rechercheScores').addEventListener('input', (e) => {
-    filtrerCartes('listeMatchs', e.target.value);
+  $('rechercheScores').addEventListener('input', () => {
+    dessinerOngletsTours(ETAT.matchs, toursDe(ETAT.matchs));
+    appliquerRechercheScores();
   });
 
   $('listeMatchs').addEventListener('click', (e) => {
@@ -1026,6 +1114,19 @@
     edition.removeAttribute('data-preremplie');
     $('btnValider-' + cle).style.display = 'block';
     $('scoreA-' + cle).focus();
+  }
+
+  /** Message après un score : signale quand le tour est complet. */
+  function annoncerScore(tour) {
+    const duTour = ETAT.matchs.filter((m) => String(m.tour) === String(tour));
+    const complet = duTour.length > 0 && duTour.every(matchSaisi);
+    const tours = toursDe(ETAT.matchs);
+    const suivant = tours[tours.indexOf(String(tour)) + 1];
+    if (complet) {
+      afficherToast('Score enregistré. Tour ' + tour + ' terminé ✓' + (suivant ? ' — touchez « Tour ' + suivant + ' »' : ''), false, 4500);
+    } else {
+      afficherToast('Score enregistré.');
+    }
   }
 
   async function validerScore(cle) {
@@ -1081,10 +1182,11 @@
       await api('saisirScoreParId', [entree.matchId, a, b, null]);
       // Une éventuelle saisie hors ligne plus ancienne pour ce match devient caduque
       ecrireFile(lireFile().filter((x) => x.matchId !== entree.matchId));
-      afficherToast('Score enregistré.');
+      const tourDuMatch = String(match.tour);
       document.activeElement && document.activeElement.blur();
       await chargerEtatPublic(true).catch(() => {});
       redessinerVuesPubliques(true);
+      annoncerScore(tourDuMatch);
     } catch (err) {
       if (err.reseau) {
         mettreEnFile(entree);
@@ -1506,6 +1608,7 @@
   // ==========================================================
   majAffichageRole();
   majBandeau();
+  mesurerBandeaux();
   chargerCacheLocal();
   redessinerVuesPubliques(true);
   viderFileAttente()

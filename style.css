@@ -646,7 +646,7 @@
     color: #6a4b00;
     border-bottom: 1px solid #f0dca0;
     position: sticky;
-    top: calc(64px + env(safe-area-inset-top, 0px));
+    top: var(--hauteur-entete, calc(64px + env(safe-area-inset-top, 0px)));
     z-index: 45;
   }
   #bandeauReseau.active { display: flex; }
@@ -918,3 +918,52 @@
   .res-V { background: var(--vert-clair); }
   .res-D { background: #d9776c; }
   .res-N { background: var(--argent); }
+
+  /* ============================================================
+     ONGLETS DES TOURS (vue Scores)
+     ============================================================ */
+  .onglets-tours {
+    position: sticky;
+    top: calc(var(--hauteur-entete, 64px) + var(--hauteur-bandeau, 0px));
+    z-index: 40;
+    display: flex;
+    gap: 6px;
+    margin: 0 -14px 12px;
+    padding: 8px 14px;
+    background: var(--fond);
+    border-bottom: 1px solid #e3e8e5;
+  }
+  .onglets-tours:empty { display: none; }
+  .onglet-tour {
+    flex: 1;
+    min-width: 0;
+    border: 1.5px solid #d5dcd8;
+    background: white;
+    border-radius: 12px;
+    padding: 8px 4px 7px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--texte);
+    font-family: inherit;
+  }
+  .onglet-tour .onglet-titre { font-size: 15px; font-weight: 700; }
+  .onglet-tour .onglet-detail { font-size: 11px; color: var(--texte-clair); font-weight: 600; white-space: nowrap; }
+  .onglet-tour.complet .onglet-detail { color: var(--vert-fonce); }
+  .onglet-tour.actif {
+    background: var(--vert-fonce);
+    border-color: var(--vert-fonce);
+    color: white;
+    box-shadow: 0 2px 6px rgba(26, 93, 58, 0.3);
+  }
+  .onglet-tour.actif .onglet-detail { color: rgba(255, 255, 255, 0.85); }
+  .separateur-joues {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--texte-clair);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 18px 4px 8px;
+  }
