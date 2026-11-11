@@ -21,7 +21,8 @@
     seuil: 3,
     calc: null,
     chargement: null,
-    tournoiOuvert: null
+    tournoiOuvert: null,
+    deplies: {}          // palmarès dépliés (« Voir les N autres »)
   };
 
   const $ = (id) => document.getElementById(id);
@@ -510,70 +511,105 @@
   }
 
   // ---------- RECORDS ----------
+
+  /** Compare deux clés (tableaux de nombres), ordre décroissant. */
+  function comparerDesc(ka, kb) {
+    for (let i = 0; i < ka.length; i++) if (kb[i] !== ka[i]) return kb[i] - ka[i];
+    return 0;
+  }
+
+  /**
+   * Les n premiers selon la clé, SANS jamais couper un ex aequo :
+   * si la n-ième place est partagée, tous ceux qui la partagent sont gardés.
+   * À égalité, l'ordre d'origine de la liste est conservé.
+   */
+  function topAvecEgalites(liste, cle, n) {
+    const tri = liste.slice().sort((a, b) => comparerDesc(cle(a), cle(b)));
+    if (tri.length <= n) return tri;
+    const seuil = cle(tri[n - 1]);
+    let fin = n;
+    while (fin < tri.length && comparerDesc(cle(tri[fin]), seuil) === 0) fin++;
+    return tri.slice(0, fin);
+  }
+
+  function estFanny(m) {
+    return Math.min(m.a.pour, m.b.pour) === 0 && Math.max(m.a.pour, m.b.pour) === 13;
+  }
+
+  function gagnantPerdant(m) {
+    return m.a.pour >= m.b.pour ? [m.a, m.b] : [m.b, m.a];
+  }
+
   function vueRecords() {
     const c = S.calc;
     const joueurs = Object.values(c.joueurs);
+    const recentsDabord = c.matchs.slice().reverse();
     const blocs = [];
 
-    // Plus larges victoires
-    const larges = c.matchs.slice().sort((x, y) => Math.abs(y.a.pour - y.b.pour) - Math.abs(x.a.pour - x.b.pour)).slice(0, 3);
-    blocs.push(blocRecord('💥 Plus larges victoires', larges.map((m) => {
-      const [g, p] = m.a.pour >= m.b.pour ? [m.a, m.b] : [m.b, m.a];
+    // ---- Plus larges victoires (hors fanny, déjà dans le coin de la Fanny) ----
+    const nonFanny = recentsDabord.filter((m) => !estFanny(m) && m.a.pour !== m.b.pour);
+    const larges = topAvecEgalites(nonFanny, (m) => [Math.abs(m.a.pour - m.b.pour)], 3);
+    blocs.push(blocRecord('larges', '💥 Plus larges victoires <span class="note-inline">(hors fanny)</span>', larges.length ? larges.map((m) => {
+      const [g, p] = gagnantPerdant(m);
       return `<strong>${g.pour} - ${p.pour}</strong> · ${esc(nomsEquipe(g.joueurs))} <span class="note-inline">contre ${esc(nomsEquipe(p.joueurs))}, le ${esc(dateFr(m.date))}</span>`;
-    })));
+    }) : ['Aucune victoire hors fanny sur la période.']));
 
-    // Matchs serrés (13-12)
-    const serres = c.matchs.filter((m) => Math.abs(m.a.pour - m.b.pour) === 1 && Math.max(m.a.pour, m.b.pour) === 13);
+    // ---- Matchs au finish (13-12) ----
+    const serres = recentsDabord.filter((m) => Math.abs(m.a.pour - m.b.pour) === 1 && Math.max(m.a.pour, m.b.pour) === 13);
     if (serres.length) {
-      const dernier = serres[serres.length - 1];
-      blocs.push(blocRecord('😮‍💨 Matchs au finish (13-12)', [
-        `<strong>${serres.length}</strong> match${serres.length > 1 ? 's' : ''} gagné${serres.length > 1 ? 's' : ''} d'un seul point`,
-        `Le dernier : ${esc(nomsEquipe((dernier.a.pour > dernier.b.pour ? dernier.a : dernier.b).joueurs))} <span class="note-inline">le ${esc(dateFr(dernier.date))}</span>`
-      ]));
+      blocs.push(blocRecord('serres', '😮‍💨 Matchs au finish (13-12)', serres.map((m) => {
+        const [g, p] = gagnantPerdant(m);
+        return `${esc(nomsEquipe(g.joueurs))} <span class="note-inline">contre ${esc(nomsEquipe(p.joueurs))}, le ${esc(dateFr(m.date))}</span>`;
+      }), { entete: [`<strong>${serres.length}</strong> match${serres.length > 1 ? 's' : ''} gagné${serres.length > 1 ? 's' : ''} d'un seul point, les plus récents en premier :`] }));
     }
 
-    // Plus longue série
-    const series = joueurs.filter((j) => j.meilleureSerie > 0).sort((a, b) => b.meilleureSerie - a.meilleureSerie).slice(0, 3);
+    // ---- Plus longues séries ----
+    const series = topAvecEgalites(joueurs.filter((j) => j.meilleureSerie > 0), (j) => [j.meilleureSerie], 3);
     if (series.length) {
-      blocs.push(blocRecord('🔥 Plus longues séries de victoires', series.map((j) =>
-        `<strong>${j.meilleureSerie}</strong> victoires de suite · ${esc(j.prenom)} <span class="note-inline">${esc(j.pseudo)}</span>`)));
+      blocs.push(blocRecord('series', '🔥 Plus longues séries de victoires', series.map((j) =>
+        `<strong>${j.meilleureSerie}</strong> victoires de suite · ${esc(nomCourt(j.id))}`)));
     }
 
-    // Assiduité
-    const assidus = joueurs.slice().sort((a, b) => b.nbTournois - a.nbTournois || b.matchs - a.matchs).slice(0, 3);
-    blocs.push(blocRecord('📅 Les plus assidus', assidus.map((j) =>
-      `<strong>${pluriel(j.nbTournois, 'tournoi')}</strong> · ${esc(j.prenom)} <span class="note-inline">${esc(j.pseudo)}, ${pluriel(j.matchs, 'match')}</span>`)));
+    // ---- Assiduité ----
+    const assidus = topAvecEgalites(joueurs, (j) => [j.nbTournois], 3);
+    blocs.push(blocRecord('assidus', '📅 Les plus assidus', assidus.map((j) =>
+      `<strong>${pluriel(j.nbTournois, 'tournoi')}</strong> · ${esc(nomCourt(j.id))} <span class="note-inline">${pluriel(j.matchs, 'match')}</span>`)));
 
-    // Meilleurs duos
+    // ---- Meilleurs duos ----
     const minDuo = 3;
-    const duos = c.duos.filter((d) => d.n >= minDuo).sort((a, b) => pct(b.v, b.n) - pct(a.v, a.n) || b.n - a.n).slice(0, 3);
-    blocs.push(blocRecord('🤝 Meilleurs duos', duos.length ? duos.map((d) =>
+    const duos = topAvecEgalites(c.duos.filter((d) => d.n >= minDuo), (d) => [pct(d.v, d.n), d.n], 3);
+    blocs.push(blocRecord('duos', '🤝 Meilleurs duos', duos.length ? duos.map((d) =>
       `<strong>${pct(d.v, d.n)} %</strong> · ${esc(nomCourt(d.ids[0]))} & ${esc(nomCourt(d.ids[1]))} <span class="note-inline">${d.v} victoires sur ${d.n} matchs ensemble</span>`)
       : [`Pas encore de duo ayant joué ${minDuo} matchs ensemble.`]));
 
-    // Meilleure équipe d'un jour
+    // ---- Meilleure équipe d'un jour ----
     const bilans = [];
-    c.tournois.forEach((t) => Object.values(t.bilans).forEach((b) => bilans.push(Object.assign({ date: t.date }, b))));
-    const jour = bilans.sort((a, b) => b.v - a.v || b.diff - a.diff).slice(0, 1);
+    c.tournois.slice().reverse().forEach((t) => Object.values(t.bilans).forEach((b) => bilans.push(Object.assign({ date: t.date }, b))));
+    const jour = topAvecEgalites(bilans, (b) => [b.v, b.diff], 1);
     if (jour.length) {
-      const b = jour[0];
-      blocs.push(blocRecord('🏅 Meilleure équipe d\'un jour', [
-        `${esc(nomsEquipe(b.joueurs))}`,
-        `<span class="note-inline">${b.v} victoire${b.v > 1 ? 's' : ''} sur ${b.n}, ${signe(b.diff)} points, le ${esc(dateFr(b.date))}</span>`
-      ]));
+      blocs.push(blocRecord('jour', '🏅 Meilleure équipe d\'un jour', jour.map((b) =>
+        `${esc(nomsEquipe(b.joueurs))} <span class="note-inline">${b.v} victoire${b.v > 1 ? 's' : ''} sur ${b.n}, ${signe(b.diff)} points, le ${esc(dateFr(b.date))}</span>`)));
     }
 
-    // Fannies
-    const donneurs = joueurs.filter((j) => j.fanniesDonnees > 0).sort((a, b) => b.fanniesDonnees - a.fanniesDonnees).slice(0, 3);
-    const receveurs = joueurs.filter((j) => j.fanniesSubies > 0).sort((a, b) => b.fanniesSubies - a.fanniesSubies).slice(0, 3);
-    if (donneurs.length || receveurs.length) {
-      const l = [];
-      if (donneurs.length) l.push('Distribuées : ' + donneurs.map((j) => `${esc(j.prenom)} <strong>×${j.fanniesDonnees}</strong>`).join(', '));
-      if (receveurs.length) l.push('Embrassées : ' + receveurs.map((j) => `${esc(j.prenom)} <strong>×${j.fanniesSubies}</strong>`).join(', '));
-      blocs.push(blocRecord('💋 Le coin de la Fanny', l));
+    // ---- Le coin de la Fanny ----
+    const fannies = recentsDabord.filter(estFanny);
+    if (fannies.length) {
+      const donneurs = topAvecEgalites(joueurs.filter((j) => j.fanniesDonnees > 0), (j) => [j.fanniesDonnees], 3);
+      const receveurs = topAvecEgalites(joueurs.filter((j) => j.fanniesSubies > 0), (j) => [j.fanniesSubies], 3);
+      const entete = [
+        'Les plus redoutables : ' + donneurs.map((j) => `${esc(nomCourt(j.id))} <strong>×${j.fanniesDonnees}</strong>`).join(', '),
+        'Ceux qui ont le plus embrassé Fanny : ' + receveurs.map((j) => `${esc(nomCourt(j.id))} <strong>×${j.fanniesSubies}</strong>`).join(', '),
+        `<div class="sous-titre-fiche" style="margin:8px 0 0;">Toutes les fannies (${fannies.length}), les plus récentes en premier</div>`
+      ];
+      blocs.push(blocRecord('fanny', '💋 Le coin de la Fanny', fannies.map((m) => {
+        const [g, p] = gagnantPerdant(m);
+        return `<strong>13 - 0</strong> · ${esc(nomsEquipe(g.joueurs))} <span class="note-inline">contre ${esc(nomsEquipe(p.joueurs))}, le ${esc(dateFr(m.date))}</span>`;
+      }), { entete }));
+    } else {
+      blocs.push(blocRecord('fanny', '💋 Le coin de la Fanny', ['Aucune fanny sur la période. Fanny attend toujours sa première visite !']));
     }
 
-    // Le saviez-vous : triplette vs doublette, qualités
+    // ---- Le saviez-vous ? ----
     const savoir = [];
     if (c.tailles.triplette >= 3) {
       const p = pct(c.tailles.tripletteGagne, c.tailles.triplette);
@@ -586,14 +622,28 @@
         return `<div class="ligne-qualite"><span class="lib-qualite"><span class="pastille ${classeQualite(k)}"></span>${k}s</span>${jaugePct(p)}<strong>${p} %</strong></div>`;
       }).join('') + '<span class="note-inline">Pourcentage de victoires selon la qualité du joueur.</span></div>');
     }
-    if (savoir.length) blocs.push(blocRecord('💡 Le saviez-vous ?', savoir));
+    if (savoir.length) blocs.push(blocRecord('savoir', '💡 Le saviez-vous ?', savoir, { limite: 99 }));
 
     return blocs.join('');
   }
 
-  function blocRecord(titre, lignes) {
-    return `<div class="carte"><div class="carte-titre">${titre}</div>` +
-      lignes.map((l) => `<div class="ligne-record">${l}</div>`).join('') + '</div>';
+  /**
+   * Carte de palmarès. Au-delà de « limite » lignes (5 par défaut),
+   * les suivantes sont repliées derrière un bouton « Voir les N autres ».
+   */
+  function blocRecord(id, titre, lignes, opts) {
+    opts = opts || {};
+    const limite = opts.limite || 5;
+    const deplie = !!S.deplies[id];
+    const visibles = deplie ? lignes : lignes.slice(0, limite);
+    let html = `<div class="carte"><div class="carte-titre"><span>${titre}</span></div>`;
+    (opts.entete || []).forEach((l) => { html += `<div class="ligne-record">${l}</div>`; });
+    html += visibles.map((l) => `<div class="ligne-record">${l}</div>`).join('');
+    if (lignes.length > limite) {
+      html += `<button type="button" class="btn btn-secondaire btn-petit btn-bloc" data-deplier="${esc(id)}">${
+        deplie ? 'Réduire' : (lignes.length - limite === 1 ? 'Voir l\'autre' : 'Voir les ' + (lignes.length - limite) + ' autres')}</button>`;
+    }
+    return html + '</div>';
   }
 
   // ---------- FICHE JOUEUR ----------
@@ -673,6 +723,7 @@
     $('statsPeriode').addEventListener('change', (e) => {
       S.periode = e.target.value;
       S.tournoiOuvert = null;
+      S.deplies = {};
       recalculer();
       dessiner();
     });
@@ -688,6 +739,14 @@
 
     const zone = $('statsContenu');
     zone.addEventListener('click', (e) => {
+      const deplier = e.target.closest('[data-deplier]');
+      if (deplier) {
+        const id = deplier.getAttribute('data-deplier');
+        S.deplies[id] = !S.deplies[id];
+        dessiner();
+        return;
+      }
+
       const tri = e.target.closest('[data-tri]');
       if (tri) { S.tri = tri.getAttribute('data-tri'); dessiner(); return; }
 
