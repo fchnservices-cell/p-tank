@@ -6,6 +6,7 @@
   <title>P-tank</title>
   <meta name="description" content="Tournois de pétanque : équipes, scores et classement.">
   <meta name="theme-color" content="#1a5d3a">
+  <meta name="author" content="Fabrice (Fabou)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -20,7 +21,10 @@
 
   <!-- ============ EN-TÊTE ============ -->
   <header class="app-header">
-    <h1>🎯 P-tank</h1>
+    <div class="titre-app">
+      <h1>🎯 P-tank</h1>
+      <button type="button" class="signature" id="signatureAuteur" aria-label="À propos de l'application">par Fabrice (Fabou)</button>
+    </div>
     <div class="header-actions">
       <span id="badgeAdmin" class="badge-admin" style="display:none;">ADMIN</span>
       <button class="btn-icon" id="btnLogin" title="Mode administrateur" aria-label="Mode administrateur">🔑</button>

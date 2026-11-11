@@ -1600,6 +1600,16 @@
     });
   }
 
+  // ==========================================================
+  // SIGNATURE DE L'AUTEUR (en-tête)
+  // Modifiable sans toucher au code : ajouter AUTEUR: '...' dans config.js
+  // ==========================================================
+  const AUTEUR = CFG.AUTEUR || 'Fabrice (Fabou)';
+  $('signatureAuteur').textContent = 'par ' + AUTEUR;
+  $('signatureAuteur').addEventListener('click', () => {
+    afficherToast('🎯 P-tank — application conçue par ' + AUTEUR + ' · © ' + new Date().getFullYear(), false, 4000);
+  });
+
   // Outils partagés avec stats.js
   window.PTank = { api, esc, ouvrirPanel, fermerPanel, afficherToast };
 
