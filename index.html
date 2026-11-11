@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>P-tank</title>
+  <meta name="description" content="Tournois de pétanque : équipes, scores et classement.">
+  <meta name="theme-color" content="#1a5d3a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="P-tank">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ EN-TÊTE ============ -->
+  <header class="app-header">
+    <h1>🎯 P-tank</h1>
+    <div class="header-actions">
+      <span id="badgeAdmin" class="badge-admin" style="display:none;">ADMIN</span>
+      <button class="btn-icon" id="btnLogin" title="Mode administrateur" aria-label="Mode administrateur">🔑</button>
+    </div>
+  </header>
+
+  <!-- Bandeau hors connexion / scores en attente -->
+  <div id="bandeauReseau" role="status" aria-live="polite">
+    <span id="texteBandeau"></span>
+    <button type="button" id="btnEnvoyerAttente" style="display:none;">Envoyer</button>
+  </div>
+
+  <!-- ============ CONTENU ============ -->
+  <main>
+
+    <!-- Invitation à installer l'application (masquée une fois installée) -->
+    <div id="carteInstallation">
+      <div id="texteInstallation"></div>
+      <div class="actions-installation">
+        <button type="button" class="btn btn-primaire btn-petit" id="btnInstaller" style="width:auto; display:none;">📲 Installer</button>
+        <button type="button" class="btn btn-secondaire btn-petit" id="btnMasquerInstallation">Plus tard</button>
+      </div>
+    </div>
+
+    <!-- VUE : COMPOSITIONS -->
+    <div class="vue active" id="vue-compositions">
+      <div class="titre-section">Composition des équipes</div>
+      <div class="recherche-live">
+        <input type="text" id="rechercheCompositions" placeholder="🔍 Rechercher un joueur ou une équipe...">
+      </div>
+      <div id="adminActionsCompositions" style="display:none; margin-bottom:14px;">
+        <button class="btn btn-secondaire btn-bloc" id="btnParticipants">👤 Participants du jour (<span id="compteurParticipants">0</span>)</button>
+        <div class="ligne-2col" style="margin-top:8px;">
+          <button class="btn btn-secondaire" id="btnComposerEquipes">✏️ Composer les équipes</button>
+          <button class="btn btn-secondaire" id="btnTirageAuSort">🎲 Tirage des matchs</button>
+        </div>
+      </div>
+      <div class="info-maj" id="infoMajCompositions"></div>
+      <div id="listeCompositions"></div>
+    </div>
+
+    <!-- VUE : SCORES -->
+    <div class="vue" id="vue-scores">
+      <div class="titre-section">Saisie des scores</div>
+      <div class="recherche-live">
+        <input type="text" id="rechercheScores" placeholder="🔍 Rechercher une équipe...">
+      </div>
+      <div class="info-maj" id="infoMajScores"></div>
+      <div id="listeMatchs"></div>
+    </div>
+
+    <!-- VUE : CLASSEMENT -->
+    <div class="vue" id="vue-classement">
+      <div class="titre-section">Classement</div>
+      <div class="info-maj" id="infoMajClassement"></div>
+      <div id="podiumClassement"></div>
+      <div id="listeClassement"></div>
+    </div>
+
+    <!-- VUE : JOUEURS (admin) -->
+    <div class="vue" id="vue-joueurs">
+      <div class="titre-section">Gestion des joueurs</div>
+      <div class="recherche-live">
+        <input type="text" id="rechercheJoueurs" placeholder="🔍 Rechercher un joueur...">
+      </div>
+      <div class="filtre-statut">
+        <button type="button" class="actif" data-filtre="tous">Tous</button>
+        <button type="button" data-filtre="assigne">Assignés</button>
+        <button type="button" data-filtre="disponible">Disponibles</button>
+      </div>
+      <button class="btn btn-primaire btn-bloc" id="btnAjouterJoueur">➕ Ajouter un joueur</button>
+      <div id="listeJoueurs" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- VUE : ADMIN (outils / export) -->
+    <div class="vue" id="vue-admin">
+      <div class="titre-section">Outils administrateur</div>
+
+      <div class="carte">
+        <div class="carte-titre">📅 Tournoi en cours</div>
+        <label for="inputDateTournoi" style="margin-top:4px;">Date du tournoi</label>
+        <div class="ligne-date">
+          <input type="date" id="inputDateTournoi">
+          <button class="btn btn-secondaire" id="btnEnregistrerDate">Enregistrer</button>
+        </div>
+      </div>
+
+      <div class="carte">
+        <div class="carte-titre">📄 Export PDF</div>
+        <button class="btn btn-secondaire btn-bloc" id="btnExportCompositions">Exporter les compositions</button>
+        <button class="btn btn-secondaire btn-bloc" id="btnExportScores">Exporter scores / classement</button>
+      </div>
+
+      <div class="carte">
+        <div class="carte-titre">🗄️ Fin de tournoi</div>
+        <button class="btn btn-secondaire btn-bloc" id="btnArchiver">Archiver ce tournoi…</button>
+        <button class="btn btn-danger btn-bloc" id="btnNouveauTournoi">Initialiser un nouveau tournoi…</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============ NAVIGATION BASSE ============ -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-vue="compositions">
+      <span class="nav-icon">👥</span><span>Équipes</span>
+    </button>
+    <button class="nav-btn" data-vue="scores">
+      <span class="nav-icon">📝</span><span>Scores</span>
+    </button>
+    <button class="nav-btn" data-vue="classement">
+      <span class="nav-icon">🏆</span><span>Classement</span>
+    </button>
+    <button class="nav-btn admin-only" data-vue="joueurs" style="display:none;">
+      <span class="nav-icon">🧑‍🤝‍🧑</span><span>Joueurs</span>
+    </button>
+    <button class="nav-btn admin-only" data-vue="admin" style="display:none;">
+      <span class="nav-icon">⚙️</span><span>Admin</span>
+    </button>
+  </nav>
+
+  <!-- ============ VOLET : LOGIN ADMIN ============ -->
+  <div class="overlay" id="overlayLogin"></div>
+  <div class="panel" id="panelLogin">
+    <div class="panel-header">
+      <h2>Mode administrateur</h2>
+      <button class="panel-close" data-close="panelLogin" aria-label="Fermer">✕</button>
+    </div>
+    <label for="inputCodeAdmin">Code administrateur</label>
+    <input type="password" id="inputCodeAdmin" placeholder="••••••" autocomplete="current-password">
+    <button class="btn btn-primaire btn-bloc" id="btnValiderLogin" style="margin-top:16px;">Déverrouiller</button>
+  </div>
+
+  <!-- ============ VOLET : FORMULAIRE JOUEUR ============ -->
+  <div class="overlay" id="overlayJoueur"></div>
+  <div class="panel" id="panelJoueur">
+    <div class="panel-header">
+      <h2 id="titrePanelJoueur">Nouveau joueur</h2>
+      <button class="panel-close" data-close="panelJoueur" aria-label="Fermer">✕</button>
+    </div>
+    <input type="hidden" id="joueurId">
+    <label for="joueurPrenom">Prénom</label>
+    <input type="text" id="joueurPrenom" placeholder="Prénom">
+    <label for="joueurPseudo">Pseudo</label>
+    <input type="text" id="joueurPseudo" placeholder="Pseudo">
+    <label for="joueurQualite">Qualité</label>
+    <select id="joueurQualite">
+      <option value="Pointeur">Pointeur</option>
+      <option value="Tireur">Tireur</option>
+      <option value="Mixte">Mixte</option>
+    </select>
+    <label for="joueurGenre">Genre</label>
+    <select id="joueurGenre">
+      <option value="H">Homme</option>
+      <option value="F">Femme</option>
+    </select>
+    <button class="btn btn-primaire btn-bloc" id="btnSauverJoueur" style="margin-top:16px;">Enregistrer</button>
+  </div>
+
+  <!-- ============ VOLET : PARTICIPANTS DU JOUR ============ -->
+  <div class="overlay" id="overlayParticipants"></div>
+  <div class="panel" id="panelParticipants">
+    <div class="panel-header">
+      <h2>Participants du jour</h2>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span id="compteurParticipantsPanel"
+              style="background:var(--vert-fonce); color:white; font-size:14px; font-weight:700;
+                     padding:3px 12px; border-radius:20px; min-width:32px; text-align:center;">0</span>
+        <button class="panel-close" data-close="panelParticipants" aria-label="Fermer">✕</button>
+      </div>
+    </div>
+    <p style="font-size:12px; color:var(--texte-clair);">
+      Seuls les joueurs inscrits ici apparaîtront dans la composition des équipes.
+    </p>
+    <label for="inputRechercheAjoutParticipant">Ajouter un participant</label>
+    <div class="zone-recherche-inline">
+      <input type="text" id="inputRechercheAjoutParticipant" placeholder="🔍 Rechercher un joueur dans la base...">
+      <div class="resultats-recherche-inline" id="resultatsAjoutParticipant"></div>
+    </div>
+    <div class="titre-section" style="margin-top:18px; font-size:14px;">Participants inscrits</div>
+    <div id="listeParticipantsActuels"></div>
+  </div>
+
+  <!-- ============ VOLET : COMPOSITION DES ÉQUIPES ============ -->
+  <div class="overlay" id="overlayEquipes"></div>
+  <div class="panel" id="panelEquipes">
+    <div class="panel-header">
+      <h2>Composer les équipes</h2>
+      <button class="panel-close" data-close="panelEquipes" aria-label="Fermer">✕</button>
+    </div>
+    <p style="font-size:12px; color:var(--texte-clair); margin-bottom:10px;">
+      Chaque modification est enregistrée immédiatement.
+    </p>
+    <button class="btn btn-secondaire btn-bloc" id="btnTirageCompositions" style="margin-bottom:10px;">🎲 Tirer au sort les équipes</button>
+    <div id="zoneOptionsCompositions" style="display:none;"></div>
+    <div id="zoneComposition"></div>
+    <button class="btn btn-secondaire btn-bloc" id="btnAjouterEquipe" style="margin-top:14px;">➕ Ajouter une équipe</button>
+  </div>
+
+  <!-- ============ VOLET : ARCHIVAGE ============ -->
+  <div class="overlay" id="overlayArchive"></div>
+  <div class="panel" id="panelArchive">
+    <div class="panel-header">
+      <h2>Archiver le tournoi</h2>
+      <button class="panel-close" data-close="panelArchive" aria-label="Fermer">✕</button>
+    </div>
+    <p class="note" id="resumeArchive"></p>
+    <label for="inputDateArchive">Date du tournoi archivé</label>
+    <input type="date" id="inputDateArchive">
+    <div class="choix-dates" id="choixDatesArchive"></div>
+    <p class="note">Cette date donne son nom à l'onglet créé dans le fichier d'archives.</p>
+    <p class="note alerte" id="alerteArchive" style="display:none;"></p>
+    <button class="btn btn-primaire btn-bloc" id="btnValiderArchive" style="margin-top:16px;">Archiver</button>
+  </div>
+
+  <!-- ============ VOLET : NOUVEAU TOURNOI ============ -->
+  <div class="overlay" id="overlayNouveau"></div>
+  <div class="panel" id="panelNouveau">
+    <div class="panel-header">
+      <h2>Nouveau tournoi</h2>
+      <button class="panel-close" data-close="panelNouveau" aria-label="Fermer">✕</button>
+    </div>
+    <p class="note alerte" id="alerteNouveau">
+      Les participants, équipes, matchs et scores actuels seront définitivement effacés.
+      Pensez à archiver le tournoi en cours avant.
+    </p>
+    <label for="inputDateNouveau">Date du nouveau tournoi</label>
+    <input type="date" id="inputDateNouveau">
+    <button class="btn btn-danger btn-bloc" id="btnValiderNouveau" style="margin-top:16px;">Effacer et démarrer le nouveau tournoi</button>
+  </div>
+
+  <!-- ============ VOLET : PDF PRÊT ============ -->
+  <div class="overlay" id="overlayPdf"></div>
+  <div class="panel" id="panelPdf">
+    <div class="panel-header">
+      <h2>PDF prêt</h2>
+      <button class="panel-close" data-close="panelPdf" aria-label="Fermer">✕</button>
+    </div>
+    <p class="note" id="nomPdf"></p>
+    <button class="btn btn-primaire btn-bloc" id="btnPartagerPdf" style="margin-top:12px;">📤 Partager</button>
+    <button class="btn btn-secondaire btn-bloc" id="btnTelechargerPdf">⬇️ Enregistrer sur l'appareil</button>
+  </div>
+
+  <!-- ============ TOAST + LOADER ============ -->
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="loader"><div class="spinner"></div></div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

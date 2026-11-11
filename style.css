@@ -1,0 +1,755 @@
+  :root {
+    --vert-fonce: #1a5d3a;
+    --vert-clair: #4caf7d;
+    --or: #d4af37;
+    --argent: #b0b0b0;
+    --bronze: #b87333;
+    --fond: #f5f7f6;
+    --carte: #ffffff;
+    --texte: #232323;
+    --texte-clair: #6b6b6b;
+    --erreur: #c0392b;
+    --rayon: 14px;
+    --ombre: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--fond);
+    color: var(--texte);
+    font-size: 15px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #app {
+    max-width: 600px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--fond);
+  }
+
+  /* ---------- EN-TÊTE ---------- */
+  header.app-header {
+    background: var(--vert-fonce);
+    color: white;
+    padding: 14px 16px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--ombre);
+  }
+
+  header.app-header h1 {
+    font-size: 20px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  header.app-header .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .badge-admin {
+    background: var(--or);
+    color: #3a3000;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  .btn-icon {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  /* ---------- NAVIGATION BASSE ---------- */
+  nav.bottom-nav {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  nav.bottom-nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px 4px 8px;
+    font-size: 11px;
+    color: var(--texte-clair);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+  }
+
+  nav.bottom-nav button .nav-icon { font-size: 19px; }
+
+  nav.bottom-nav button.active {
+    color: var(--vert-fonce);
+    font-weight: 700;
+  }
+
+  /* ---------- CONTENU PRINCIPAL ---------- */
+  main {
+    flex: 1;
+    padding: 14px;
+    padding-bottom: 24px;
+  }
+
+  .vue { display: none; }
+  .vue.active { display: block; animation: fadeIn 0.2s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- CARTES / LISTES ---------- */
+  .carte {
+    background: var(--carte);
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .carte-titre {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pastille {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .pastille-pointeur { background: #3498db; }
+  .pastille-tireur { background: #e67e22; }
+  .pastille-mixte { background: #9b59b6; }
+
+  .liste-joueurs-equipe {
+    font-size: 13px;
+    color: var(--texte-clair);
+  }
+
+  /* ---------- BOUTONS ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 18px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .btn:active { filter: brightness(0.92); }
+  .btn-primaire { background: var(--vert-fonce); color: white; width: 100%; }
+  .btn-secondaire { background: #eef2f0; color: var(--vert-fonce); }
+  .btn-danger { background: #fdecea; color: var(--erreur); }
+  .btn-petit { padding: 6px 12px; font-size: 12px; }
+  .btn-bloc { width: 100%; margin-top: 8px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ---------- FORMULAIRES ---------- */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texte-clair);
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+
+  input[type=text], input[type=number], input[type=password], input[type=date], select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #dadada;
+    border-radius: 10px;
+    font-size: 15px;
+    background: white;
+    color: var(--texte);
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--vert-clair);
+  }
+
+  /* ---------- VOLET LATÉRAL (panel) ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 90;
+    display: none;
+  }
+  .overlay.active { display: block; }
+
+  .panel {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 85%;
+    max-width: 420px;
+    height: 100%;
+    background: white;
+    z-index: 100;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+    transition: right 0.25s ease;
+    overflow-y: auto;
+    padding: 18px;
+    padding-top: calc(18px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  .panel.active { right: 0; }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .panel-header h2 { font-size: 17px; margin: 0; }
+  .panel-close {
+    background: #f0f0f0;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  /* ---------- RECHERCHE LIVE ---------- */
+  .recherche-live {
+    margin-bottom: 12px;
+  }
+  .recherche-live input {
+    background: white;
+  }
+
+  /* ---------- TABLEAU JOUEURS ---------- */
+  .ligne-joueur {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 4px;
+    border-bottom: 1px solid #eee;
+    gap: 8px;
+  }
+  .ligne-joueur:last-child { border-bottom: none; }
+  .info-joueur { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+  .info-joueur .ligne-nom { display: flex; align-items: center; }
+  .info-joueur .nom { font-weight: 600; }
+  .info-joueur .pseudo { font-size: 12px; color: var(--texte-clair); margin-left: 4px; }
+  .actions-joueur { display: flex; gap: 6px; flex-shrink: 0; }
+  .actions-joueur button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  /* ---------- MATCHS ---------- */
+  .tour-titre {
+    font-weight: 700;
+    color: var(--vert-fonce);
+    margin: 18px 0 8px;
+    font-size: 15px;
+  }
+  .tour-titre:first-child { margin-top: 0; }
+
+  .bloc-match-equipes {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .equipe-label {
+    flex: 1;
+    min-width: 0;
+  }
+  .equipe-label .equipe-numero {
+    font-weight: 600;
+    font-size: 13px;
+    display: block;
+  }
+  .equipe-label .equipe-composition {
+    font-size: 11.5px;
+    color: var(--texte-clair);
+    line-height: 1.35;
+    margin-top: 2px;
+  }
+  .equipe-label.equipe-droite { text-align: right; }
+
+  .vs-separateur {
+    color: var(--texte-clair);
+    font-size: 11px;
+    font-weight: 700;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .bloc-match-scores {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .score-input {
+    width: 56px;
+    text-align: center;
+    padding: 9px 4px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .score-input.score-invalide {
+    border-color: var(--erreur);
+    background: #fdecea;
+    color: var(--erreur);
+  }
+  .vs { color: var(--texte-clair); font-size: 12px; }
+  .statut-joue {
+    color: var(--vert-fonce);
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .statut-joue.cliquable {
+    cursor: pointer;
+  }
+  .statut-joue .icone-modifier {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+
+  /* ---------- CLASSEMENT / PODIUM ---------- */
+  .podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px 0 20px;
+  }
+  .podium-marche {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+  .podium-medaille { font-size: 28px; }
+  .podium-bloc {
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8px;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .podium-1 .podium-bloc { background: var(--or); height: 90px; color: #3a3000; }
+  .podium-2 .podium-bloc { background: var(--argent); height: 65px; color: #2e2e2e; }
+  .podium-3 .podium-bloc { background: var(--bronze); height: 50px; }
+  .podium-nom { font-size: 11px; margin-top: 4px; text-align: center; color: var(--texte-clair); }
+  .podium-composition {
+    font-size: 9.5px;
+    color: var(--texte-clair);
+    text-align: center;
+    margin-top: 3px;
+    line-height: 1.3;
+    padding: 0 2px;
+  }
+
+  .ligne-classement {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 6px;
+    border-bottom: 1px solid #eee;
+  }
+  .rang-cercle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #eef2f0;
+    color: var(--vert-fonce);
+    font-weight: 700;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .classement-detail { flex: 1; }
+  .classement-equipe { font-weight: 700; font-size: 13px; }
+  .classement-joueurs { font-size: 11px; color: var(--texte-clair); }
+  .classement-stats { text-align: right; font-size: 12px; }
+  .classement-points { font-weight: 700; color: var(--vert-fonce); }
+
+  /* ---------- TOAST / MESSAGES ---------- */
+  #toast {
+    position: fixed;
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--vert-fonce);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.25s ease;
+    box-shadow: var(--ombre);
+    max-width: 85%;
+    text-align: center;
+  }
+  #toast.erreur { background: var(--erreur); }
+  #toast.active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ---------- LOADER ---------- */
+  #loader {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  #loader.active { display: flex; }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 4px solid #ddd;
+    border-top-color: var(--vert-fonce);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- DIVERS ---------- */
+  .texte-vide {
+    text-align: center;
+    color: var(--texte-clair);
+    font-size: 13px;
+    padding: 30px 10px;
+  }
+
+  .titre-section {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 4px 0 14px;
+    color: var(--vert-fonce);
+  }
+
+  .ligne-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ---------- COMPOSITION D'ÉQUIPES PAR EMPLACEMENTS ---------- */
+  .emplacement {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1.5px dashed #d0d0d0;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .emplacement:active { background: #f5f7f6; }
+  .emplacement.vide { color: var(--texte-clair); }
+  .emplacement.rempli {
+    border-style: solid;
+    border-color: var(--vert-clair);
+    background: #f3faf6;
+    color: var(--texte);
+    font-weight: 600;
+  }
+  .emplacement.optionnel-vide { border-color: #e8e8e8; }
+  .emplacement .retirer-joueur {
+    background: none;
+    border: none;
+    color: var(--erreur);
+    font-size: 15px;
+    padding: 2px 6px;
+    cursor: pointer;
+  }
+
+  .zone-recherche-inline {
+    margin: -2px 0 10px 0;
+    padding: 10px;
+    background: #eef2f0;
+    border-radius: 10px;
+  }
+  .zone-recherche-inline input {
+    margin-bottom: 8px;
+  }
+  .resultats-recherche-inline {
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .resultat-joueur-inline {
+    display: flex;
+    align-items: center;
+    padding: 9px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .resultat-joueur-inline:active { background: white; }
+  .resultat-joueur-inline .pastille { flex-shrink: 0; }
+  .aucun-resultat {
+    text-align: center;
+    color: var(--texte-clair);
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  .compteur-equipe-badge {
+    font-size: 11px;
+    color: var(--texte-clair);
+    font-weight: 600;
+  }
+  .compteur-equipe-badge.complet { color: var(--vert-fonce); }
+
+  .supprimer-equipe {
+    background: none;
+    border: none;
+    color: var(--erreur);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+
+  .carte-titre-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------- STATUT D'ASSIGNATION (vue Joueurs) ---------- */
+  .filtre-statut {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .filtre-statut button {
+    flex: 1;
+    padding: 8px 4px;
+    border: 1px solid #dadada;
+    background: white;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texte-clair);
+    cursor: pointer;
+  }
+  .filtre-statut button.actif {
+    background: var(--vert-fonce);
+    color: white;
+    border-color: var(--vert-fonce);
+  }
+
+  .badge-statut {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-statut.assigne {
+    background: #e3f6ec;
+    color: var(--vert-fonce);
+  }
+  .badge-statut.disponible {
+    background: #f0f0f0;
+    color: var(--texte-clair);
+  }
+
+  /* ============================================================
+     AJOUTS VERSION MOBILE (PWA)
+     ============================================================ */
+
+  input[type=date] { min-height: 44px; }
+  button:focus-visible, .emplacement:focus-visible, .resultat-joueur-inline:focus-visible {
+    outline: 2px solid var(--vert-clair);
+    outline-offset: 2px;
+  }
+
+  /* ---------- BANDEAU RÉSEAU / SCORES EN ATTENTE ---------- */
+  #bandeauReseau {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    background: #fff4d6;
+    color: #6a4b00;
+    border-bottom: 1px solid #f0dca0;
+    position: sticky;
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    z-index: 45;
+  }
+  #bandeauReseau.active { display: flex; }
+  #bandeauReseau.hors-ligne { background: #fdecea; color: var(--erreur); border-color: #f5c6c0; }
+  #bandeauReseau button {
+    background: white;
+    border: 1px solid currentColor;
+    color: inherit;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ---------- SCORE EN ATTENTE D'ENVOI ---------- */
+  .statut-attente {
+    color: #8a6100;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+  .statut-attente small {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+  .carte.carte-attente { box-shadow: 0 0 0 2px #f3d27a, var(--ombre); }
+
+  /* ---------- INFO DE MISE À JOUR ---------- */
+  .info-maj {
+    font-size: 11px;
+    color: var(--texte-clair);
+    text-align: center;
+    margin: -6px 0 12px;
+  }
+
+  /* ---------- CHOIX DE DATE (archivage) ---------- */
+  .choix-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .choix-date {
+    border: 1px solid #dadada;
+    background: white;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--texte);
+    cursor: pointer;
+  }
+  .choix-date.actif {
+    background: var(--vert-fonce);
+    border-color: var(--vert-fonce);
+    color: white;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--texte-clair);
+    line-height: 1.45;
+    margin: 10px 0 0;
+  }
+  .note.alerte {
+    color: #8a4b00;
+    background: #fff4d6;
+    padding: 8px 10px;
+    border-radius: 8px;
+  }
+  .ligne-date {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .ligne-date input { flex: 1; }
+
+  /* ---------- INVITATION À INSTALLER ---------- */
+  #carteInstallation {
+    display: none;
+    background: #eef7f1;
+    border: 1px solid #cfe7d9;
+    border-radius: var(--rayon);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  #carteInstallation.active { display: block; }
+  #carteInstallation .actions-installation {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vue.active { animation: none; }
+    .panel, #toast { transition: none; }
+  }
