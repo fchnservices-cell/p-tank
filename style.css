@@ -996,3 +996,35 @@
     touch-action: manipulation;
   }
   .signature:active { background: var(--or); color: #3a3000; }
+
+  /* ---------- NOUVELLE VERSION DISPONIBLE ---------- */
+  #bandeauNouvelleVersion {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 24px);
+    max-width: 560px;
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px 10px 14px;
+    background: var(--vert-fonce);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    font-size: 13px;
+  }
+  #bandeauNouvelleVersion button {
+    background: var(--or);
+    color: #3a3000;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }

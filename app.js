@@ -14,6 +14,7 @@
   'use strict';
 
   const CFG = window.P_TANK_CONFIG || {};
+  const VERSION_APP = '1.6 du 11/11/2026'; // affichée en touchant la signature
   const REFRESH_MS = Math.max(10, Number(CFG.REFRESH_SECONDES) || 30) * 1000;
   const CLE_CACHE = 'ptank_etat_v1';
   const CLE_FILE = 'ptank_scores_en_attente_v1';
@@ -1598,6 +1599,24 @@
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => { /* l'appli fonctionne aussi sans */ });
     });
+    // Le service worker prévient quand une version plus récente vient d'être téléchargée
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'nouvelle-version') proposerRechargement();
+    });
+  }
+
+  function proposerRechargement() {
+    if (document.getElementById('bandeauNouvelleVersion')) return;
+    const div = document.createElement('div');
+    div.id = 'bandeauNouvelleVersion';
+    div.setAttribute('role', 'status');
+    div.innerHTML = '<span>🔄 Une nouvelle version de l\'appli est disponible.</span>' +
+      '<button type="button">Recharger</button>';
+    div.querySelector('button').addEventListener('click', () => {
+      if (saisieScoreEnCours() && !confirm('Un score tapé n\'a pas été validé. Recharger quand même ?')) return;
+      window.location.reload();
+    });
+    document.body.appendChild(div);
   }
 
   // ==========================================================
@@ -1614,7 +1633,7 @@
   if (signature) { // absent si index.html n'est pas encore à jour : on ne bloque rien
     signature.textContent = MENTION;
     signature.addEventListener('click', () => {
-      afficherToast('🎯 P-tank — application conçue et développée par ' + MENTION, false, 4000);
+      afficherToast('🎯 P-tank — application conçue et développée par ' + MENTION + ' · version ' + VERSION_APP, false, 4500);
     });
   }
 

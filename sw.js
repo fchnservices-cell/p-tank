@@ -49,33 +49,70 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // l'API Google n'est jamais mise en cache
 
-  event.respondWith(reseauDabord(req));
+  const traitement = reseauDabord(req);
+  event.respondWith(traitement.reponse);
+  // Laisse le temps à la mise à jour en arrière-plan de se terminer
+  event.waitUntil(traitement.miseAJour.catch(() => {}));
 });
 
-async function reseauDabord(req) {
-  const cache = await caches.open(CACHE);
-  const copie = await cache.match(req, { ignoreSearch: true });
+/** Empreinte d'une version de fichier, fournie par GitHub Pages. */
+function empreinte(rep) {
+  return (rep && (rep.headers.get('etag') || rep.headers.get('last-modified'))) || '';
+}
 
-  // Une requête de navigation ne peut pas être recopiée avec des options : on repart de son adresse
-  const cible = req.mode === 'navigate' ? req.url : req;
-  const reseau = fetch(cible, { cache: 'no-cache' }).then((rep) => {
-    if (rep && rep.ok) cache.put(req, rep.clone());
-    return rep;
-  });
+let notificationEnvoyee = false;
+async function signalerNouvelleVersion() {
+  if (notificationEnvoyee) return;
+  notificationEnvoyee = true;
+  const fenetres = await self.clients.matchAll({ type: 'window' });
+  fenetres.forEach((f) => f.postMessage({ type: 'nouvelle-version' }));
+  setTimeout(() => { notificationEnvoyee = false; }, 10000);
+}
 
-  if (!copie) {
-    try { return await reseau; }
-    catch (e) {
-      const accueil = await cache.match('./index.html');
-      return accueil || Response.error();
+/**
+ * Réseau d'abord, copie locale si le réseau est absent ou trop lent.
+ * Si la copie locale a été servie et que le réseau apporte ensuite une
+ * version différente, l'application est prévenue (bouton « Recharger »).
+ */
+function reseauDabord(req) {
+  let copieServie = false;
+  let resoudreMaj;
+  const miseAJour = new Promise((r) => { resoudreMaj = r; });
+
+  const reponse = (async () => {
+    const cache = await caches.open(CACHE);
+    const copie = await cache.match(req, { ignoreSearch: true });
+
+    // Une requête de navigation ne peut pas être recopiée avec des options : on repart de son adresse
+    const cible = req.mode === 'navigate' ? req.url : req;
+    const reseau = fetch(cible, { cache: 'no-cache' }).then(async (rep) => {
+      if (rep && rep.ok) {
+        await cache.put(req, rep.clone());
+        const ancienne = empreinte(copie);
+        const nouvelle = empreinte(rep);
+        if (copieServie && ancienne && nouvelle && ancienne !== nouvelle) signalerNouvelleVersion();
+      }
+      return rep;
+    });
+    resoudreMaj(reseau);
+
+    if (!copie) {
+      try { return await reseau; }
+      catch (e) {
+        const accueil = await cache.match('./index.html');
+        return accueil || Response.error();
+      }
     }
-  }
 
-  // Réseau trop lent ou absent → copie locale ; la mise à jour se fait en arrière-plan
-  const delai = new Promise((resolve) => setTimeout(() => resolve(copie), DELAI_RESEAU_MS));
-  try {
-    return await Promise.race([reseau.catch(() => copie), delai]);
-  } catch (e) {
-    return copie;
-  }
+    // Réseau trop lent ou absent → copie locale ; la mise à jour continue en arrière-plan
+    const delai = new Promise((resolve) => setTimeout(() => { copieServie = true; resolve(copie); }, DELAI_RESEAU_MS));
+    try {
+      return await Promise.race([reseau.catch(() => { copieServie = true; return copie; }), delai]);
+    } catch (e) {
+      copieServie = true;
+      return copie;
+    }
+  })();
+
+  return { reponse, miseAJour };
 }
