@@ -20,6 +20,7 @@ const FICHIERS = [
   './style.css',
   './app.js',
   './stats.js',
+  './tms.js',
   './config.js',
   './manifest.webmanifest',
   './icons/icon-192.png',

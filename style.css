@@ -1028,3 +1028,35 @@
     cursor: pointer;
     flex-shrink: 0;
   }
+
+  /* ---------- TEXTES POUR TMS ---------- */
+  .bloc-tms {
+    border: 1px solid #e3e8e5;
+    border-radius: 12px;
+    padding: 10px;
+    margin-top: 12px;
+  }
+  .entete-bloc-tms {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .compteur-tms {
+    font-size: 11px;
+    color: var(--texte-clair);
+    font-variant-numeric: tabular-nums;
+  }
+  .apercu-tms {
+    background: #fffaf2;
+    border: 1px solid #f3dfbf;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  .apercu-tms p { margin: 8px 0; }

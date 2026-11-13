@@ -14,7 +14,7 @@
   'use strict';
 
   const CFG = window.P_TANK_CONFIG || {};
-  const VERSION_APP = '1.6 du 11/11/2026'; // affichée en touchant la signature
+  const VERSION_APP = '1.7 du 13/11/2026'; // affichée en touchant la signature
   const REFRESH_MS = Math.max(10, Number(CFG.REFRESH_SECONDES) || 30) * 1000;
   const CLE_CACHE = 'ptank_etat_v1';
   const CLE_FILE = 'ptank_scores_en_attente_v1';
@@ -1638,7 +1638,22 @@
   }
 
   // Outils partagés avec stats.js
-  window.PTank = { api, esc, ouvrirPanel, fermerPanel, afficherToast };
+  window.PTank = {
+    api, esc, ouvrirPanel, fermerPanel, afficherToast,
+    // Recharge équipes, matchs, classement (avec sablier) et renvoie les données
+    rafraichirEtat: async () => {
+      afficherLoader(true);
+      try {
+        const etat = await chargerEtatPublic(true);
+        redessinerVuesPubliques(false);
+        return etat;
+      } finally { afficherLoader(false); }
+    },
+    // Dernières données connues (utile hors connexion)
+    etatCourant: () => ETAT.donneesChargees
+      ? { equipes: ETAT.equipes, matchs: ETAT.matchs, classement: ETAT.classement, dateTournoi: ETAT.dateTournoi }
+      : null
+  };
 
   // ==========================================================
   // DÉMARRAGE

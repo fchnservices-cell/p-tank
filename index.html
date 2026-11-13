@@ -131,6 +131,13 @@
       </div>
 
       <div class="carte">
+        <div class="carte-titre">📋 Textes pour TMS</div>
+        <p class="note" style="margin:0 0 4px;">Texte mis en forme, prêt à coller dans un commentaire TMS.</p>
+        <button class="btn btn-primaire btn-bloc" id="btnTmsCompositions">Compositions et matchs du jour</button>
+        <button class="btn btn-primaire btn-bloc" id="btnTmsResultats">Résultats et classement</button>
+      </div>
+
+      <div class="carte">
         <div class="carte-titre">📄 Export PDF</div>
         <button class="btn btn-secondaire btn-bloc" id="btnExportCompositions">Exporter les compositions</button>
         <button class="btn btn-secondaire btn-bloc" id="btnExportScores">Exporter scores / classement</button>
@@ -277,6 +284,16 @@
     <button class="btn btn-danger btn-bloc" id="btnValiderNouveau" style="margin-top:16px;">Effacer et démarrer le nouveau tournoi</button>
   </div>
 
+  <!-- ============ VOLET : TEXTES POUR TMS ============ -->
+  <div class="overlay" id="overlayTms"></div>
+  <div class="panel" id="panelTms">
+    <div class="panel-header">
+      <h2 id="titrePanelTms">Texte pour TMS</h2>
+      <button class="panel-close" data-close="panelTms" aria-label="Fermer">✕</button>
+    </div>
+    <div id="contenuTms"></div>
+  </div>
+
   <!-- ============ VOLET : PDF PRÊT ============ -->
   <div class="overlay" id="overlayPdf"></div>
   <div class="panel" id="panelPdf">
@@ -308,5 +325,6 @@
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script src="stats.js"></script>
+<script src="tms.js"></script>
 </body>
 </html>
